@@ -1,0 +1,32 @@
+name: Update library manifest
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - library.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild library.json
+        run: node scripts/update-library-manifest.cjs
+
+      - name: Commit changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "murshid-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add library.json
+            git commit -m "chore: refresh library manifest"
+            git push
+          else
+            echo "Manifest already up to date"
+          fi
